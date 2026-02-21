@@ -2003,6 +2003,7 @@ def apply_params_to_form_data(form_data, model):
 
     open_webui_params = {
         "stream_response": bool,
+        "include_usage": bool,
         "stream_delta_chunk_size": int,
         "function_calling": str,
         "reasoning_tags": list,
@@ -2175,6 +2176,16 @@ async def process_chat_payload(request, form_data, user, metadata, model):
                         ]
                 # Strip files field — it's been incorporated into content
                 message.pop("files", None)
+
+    # Request usage stats in the final streaming chunk (OpenAI-compatible providers)
+    # Controlled by the include_usage param: null/True = inject, False = skip
+    include_usage = metadata.get("params", {}).get("include_usage")
+    if (
+        form_data.get("stream")
+        and include_usage is not False
+        and "stream_options" not in form_data
+    ):
+        form_data["stream_options"] = {"include_usage": True}
 
     # Process messages with OR-aligned output items for clean LLM messages
     form_data["messages"] = process_messages_with_output(form_data.get("messages", []))

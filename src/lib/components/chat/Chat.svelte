@@ -139,6 +139,7 @@
 	let imageGenerationEnabled = false;
 	let webSearchEnabled = false;
 	let codeInterpreterEnabled = false;
+	let thinkingEnabled: boolean | null = null;
 
 	let showCommands = false;
 
@@ -240,6 +241,7 @@
 						webSearchEnabled = input.webSearchEnabled;
 						imageGenerationEnabled = input.imageGenerationEnabled;
 						codeInterpreterEnabled = input.codeInterpreterEnabled;
+						thinkingEnabled = input.thinkingEnabled ?? null;
 					}
 				} catch (e) {}
 			} else {
@@ -637,6 +639,7 @@
 					webSearchEnabled = input.webSearchEnabled;
 					imageGenerationEnabled = input.imageGenerationEnabled;
 					codeInterpreterEnabled = input.codeInterpreterEnabled;
+					thinkingEnabled = input.thinkingEnabled ?? null;
 				}
 			} catch (e) {}
 		}
@@ -2080,7 +2083,15 @@
 							? (params?.stop.split(',').map((token) => token.trim()) ?? $settings.params.stop).map(
 									(str) => decodeURIComponent(JSON.parse('"' + str.replace(/\"/g, '\\"') + '"'))
 								)
-							: undefined
+							: undefined,
+					...(thinkingEnabled === true
+						? {
+								reasoning_effort:
+									params?.reasoning_effort ?? $settings?.params?.reasoning_effort ?? 'medium'
+							}
+						: thinkingEnabled === false
+							? { reasoning_effort: 'off' }
+							: {})
 				},
 
 				files: (files?.length ?? 0) > 0 ? files : undefined,
@@ -2678,6 +2689,7 @@
 									bind:imageGenerationEnabled
 									bind:codeInterpreterEnabled
 									bind:webSearchEnabled
+									bind:thinkingEnabled
 									bind:atSelectedModel
 									bind:showCommands
 									toolServers={$toolServers}
@@ -2748,6 +2760,7 @@
 									bind:imageGenerationEnabled
 									bind:codeInterpreterEnabled
 									bind:webSearchEnabled
+									bind:thinkingEnabled
 									bind:atSelectedModel
 									bind:showCommands
 									toolServers={$toolServers}
